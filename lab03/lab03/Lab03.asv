@@ -1,0 +1,68 @@
+classdef Lab03 < handle
+    properties (Constant = true)
+        A = 1
+        x0 = 2
+    end
+    
+    properties
+        m_x
+    end
+    
+    methods
+        function v = impulse(this, T)
+           n = length(this.m_x);
+           v = zeros(1, n);
+           for k=1:n
+               if abs(this.m_x(k)) <= T
+                    v(k) = 1;
+               end
+           end
+        end
+        
+        function v = gauss(this, sigma)
+            v = this.A * exp(-this.m_x .^ 2 / sigma);
+        end
+                
+        function v = dft(this, y)
+           l = length(y);
+           v = zeros(1, l);
+           t = -2 * pi * 1i / l;
+           for k=1:l
+               for n=1:l
+                   v(k) = v(k) + y(n) * exp(t * (n - 1) * (k - 1));
+               end
+           end
+        end
+        
+        function conv(this, y1, y2, num)
+            figure(num);
+            subplot(2, 1, 1);
+            plot(this.m_x, y1, 'r');
+            title('Исходный сигнал');
+            
+            
+            
+            L1 = length(y1);
+            L2 = length(y2);
+            
+            X = fft([y zeros(1,L1-1)]);
+            Y = fft([y zeros(1,L2-1)]);
+            
+            subplot(2, 1, 2);
+            plot(ifft(X .* Y), 'r');
+             title('Свёртка');
+        end
+        
+        function main(this, T, sigma, step)
+            this.m_x = -this.x0:step:this.x0;
+            sample_rect = this.impulse(T);
+            sample_gauss = this.gauss(sigma);
+            
+            shg;
+            
+            this.conv(sample_gauss, sample_gauss, 1);
+            this.conv(sample_rect, sample_gauss, 2);
+            this.conv(sample_rect, sample_rect, 3);
+        end
+    end
+end
